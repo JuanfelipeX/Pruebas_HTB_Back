@@ -1,20 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Import the cors module
 const { Pool } = require('pg');
 const app = express();
 const PORT = 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+
+app.use(cors()); // Enable CORS for all routes
 
 const movieRouter = require('./routes/movie.js');
 
 app.use('/movie', movieRouter);
+
+// Rest of your code...
 
 movieRouter.get('/', (req, res) => {
   // Lógica para obtener la lista de usuarios
