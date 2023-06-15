@@ -1,139 +1,96 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
-const User = require('../models/movie.js');
-const { generateToken, verifyToken, comparePassword } = require('../routes/auth.js');
+const Movie = require('../models/movie.js');
 
 
 // Obtener la lista completa de usuarios
 router.get('/', (req, res) => {
-  User.findAll()
-    .then((users) => {
-      res.json(users);
+  Movie.findAll()
+    .then((movie) => {
+      res.json(movie);
     })
     .catch((error) => {
-      res.status(500).json({ error: 'Error al obtener la lista de usuarios' });
+      res.status(500).json({ error: 'Error al obtener la lista de las Peliculas' });
     });
 });
 
 // Crear un nuevo usuario
 router.post('/', (req, res) => {
-  const { name, email, password, image } = req.body;
+  const { title, resume, director, publication_date } = req.body;
 
-  User.create({ name, email, password, image })
-    .then((user) => {
-      res.json(user);
+  Movie.create({ title, resume, director, publication_date })
+    .then((movie) => {
+      res.json(movie);
     })
     .catch((error) => {
-      res.status(500).json({ error: 'Error al crear un nuevo usuario' });
+      res.status(500).json({ error: 'Error al crear una nueva Pelicula' });
     });
 });
 
 
 // Obtener los detalles de un usuario específico
 router.get('/:id', (req, res) => {
-  const userId = req.params.id;
+  const movieId = req.params.id;
 
-  User.findByPk(userId)
-    .then((user) => {
-      if (user) {
-        res.json(user);
+  Movie.findByPk(movieId)
+    .then((movie) => {
+      if (movie) {
+        res.json(movie);
       } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
+        res.status(404).json({ error: 'Pelicula no encontrada' });
       }
     })
     .catch((error) => {
-      res.status(500).json({ error: 'Error al obtener los detalles del usuario' });
+      res.status(500).json({ error: 'Error al obtener los detalles de la Pelicula' });
     });
 });
 
 // Actualizar los detalles de un usuario específico
 router.put('/:id', (req, res) => {
-  const userId = req.params.id;
-  const { name, email, image } = req.body;
+  const movieId = req.params.id;
+  const { title, resume, director, publication_date } = req.body;
 
-  User.findByPk(userId)
-    .then((user) => {
-      if (user) {
-        user.name = name;
-        user.email = email;
-        user.image = image;
-        return user.save();
+  Movie.findByPk(movieId)
+    .then((movie) => {
+      if (movie) {
+        movie.title = title;
+        movie.resume = resume;
+        movie.director = director;
+        movie.publication_date = publication_date;
+        return movie.save();
       } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
+        res.status(404).json({ error: 'Pelicula no encontrado' });
       }
     })
-    .then((updatedUser) => {
-      res.json(updatedUser);
+    .then((updatedMovie) => {
+      res.json(updatedMovie);
     })
     .catch((error) => {
-      res.status(500).json({ error: 'Error al actualizar los detalles del usuario' });
+      res.status(500).json({ error: 'Error al actualizar los detalles de la Pelicula' });
     });
 });
 
 // Eliminar un usuario específico
 router.delete('/:id', (req, res) => {
-  const userId = req.params.id;
+  const movieId = req.params.id;
 
-  User.findByPk(userId)
-    .then((user) => {
-      if (user) {
-        return user.destroy();
+  Movie.findByPk(movieId)
+    .then((movie) => {
+      if (movie) {
+        return movie.destroy();
       } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
+        res.status(404).json({ error: 'Pelicula no encontrado' });
       }
     })
     .then(() => {
-      res.json({ message: 'Usuario eliminado correctamente' });
+      res.json({ message: 'Pelicula eliminada correctamente' });
     })
     .catch((error) => {
-      res.status(500).json({ error: 'Error al eliminar el usuario' });
+      res.status(500).json({ error: 'Error al eliminar la pelicula' });
     });
 });
 
-// Ruta para iniciar sesión y generar un token JWT
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
 
-  // Buscar al usuario por su correo electrónico
-  User.findOne({ where: { email } })
-    .then((user) => {
-      if (!user) {
-        res.status(401).json({ error: 'Correo electrónico o contraseña incorrectos' });
-      } else {
-        // Comparar la contraseña ingresada con la contraseña almacenada en la base de datos
-        const isPasswordValid = comparePassword(password, user.password);
-        if (!isPasswordValid) {
-          res.status(401).json({ error: 'Correo electrónico o contraseña incorrectos' });
-        } else {
-          // Generar un token JWT
-          const token = generateToken(user);
-
-          // Devolver el token como respuesta
-          res.json({ token });
-        }
-      }
-    })
-    .catch((error) => {
-      res.status(500).json({ error: 'Error al iniciar sesión' });
-    });
-});
-
-// Rutas protegidas con JWT
-router.get('/', (req, res) => {
-  const token = req.headers.authorization;
-
-  // Verificar el token JWT
-  const decodedToken = verifyToken(token);
-  if (!decodedToken) {
-    res.status(401).json({ error: 'Token inválido' });
-  } else {
-    // Si el token es válido, realizar la lógica de la ruta aquí
-    // Obtener la lista completa de usuarios, crear un nuevo usuario, etc.
-  }
-});
-
-// Resto de los endpoints y lógica de la API
 
 
 module.exports = router;
